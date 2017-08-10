@@ -1,3 +1,4 @@
+# -*- coding: iso-8859-1 -*-
 from csv import reader
 from operator import itemgetter
 from math import log
@@ -15,7 +16,7 @@ def readData(file):
 
 class NaiveBayesClassifier:
     def __init__(self):
-        # Klassenvariablen f√ºr Klassen- und Featurewahrscheinlichkeiten
+        # Klassenvariablen f¸r Klassen- und Featurewahrscheinlichkeiten
         self.ProbClasses = {}
         self.Features = {}
         self.ProbFeatures = {}
@@ -28,8 +29,8 @@ class NaiveBayesClassifier:
         self.calculateFeatureProbabilities(labeled_trainingset)
 
     # Methode zur Berechnung der Klassenwahrscheinlichkeiten
-    # Zun√§chst werden die absoluten H√§ufigkeiten der Klassen im trainingsset bestimmt.
-    # Anschlie√üend wird die relative H√§ufigkeit der Klassen berechnet.
+    # Zun‰chst werden die absoluten H‰ufigkeiten der Klassen im trainingsset bestimmt.
+    # Anschlieﬂend wird die relative H‰ufigkeit der Klassen berechnet.
     def calculateClassProbabilitiesAndSizeOfVocab(self, labeled_trainingset):
         vocab = []
         for entry in labeled_trainingset:

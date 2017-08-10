@@ -1,45 +1,104 @@
-bsp = [([4, 5, 4, 5], 4), ([3, 4, 5, 4], 5), ([2, 3, 4, 5], 4)]
+from csv import reader
+from operator import itemgetter
+from math import log
+from collections import OrderedDict
+
+
+def readData(file):
+    file = open("file", "r")
+    data = []
+    csvReader = reader(file, delimiter=",")
+    csvReader.__next__()
+    for row in csvReader:
+        data.append((row[0:4], row[4]))
+    return data
 
 
 class NaiveBayesClassifier:
     def __init__(self):
+        # Klassenvariablen für Klassen- und Featurewahrscheinlichkeiten
         self.ProbClasses = {}
+        self.Features = {}
         self.ProbFeatures = {}
+        self.vocabSize = 0
 
     def train(self, labeled_trainingset):
-        "Trainingset:[([4,5,4,5],Klasse),...]"
-        self.calculateClassProbabilities(labeled_trainingset)
+        """labeled_trainingset: Liste aus Tupeln, Tupeln bestehen aus Liste der Features und der Klasse
+        Bsp:[([Feature1, Feature2,..],Klasse1),([Feature1, Feature2,..],Klasse2)...]"""
+        self.calculateClassProbabilitiesAndSizeOfVocab(labeled_trainingset)
         self.calculateFeatureProbabilities(labeled_trainingset)
 
-    def calculateClassProbabilities(self, labeled_trainingset):
-        for s in labeled_trainingset:
-            if s[1] not in self.ProbClasses:
-                self.ProbClasses[s[1]] = 1
+    # Methode zur Berechnung der Klassenwahrscheinlichkeiten
+    # Zunächst werden die absoluten Häufigkeiten der Klassen im trainingsset bestimmt.
+    # Anschließend wird die relative Häufigkeit der Klassen berechnet.
+    def calculateClassProbabilitiesAndSizeOfVocab(self, labeled_trainingset):
+        vocab = []
+        for entry in labeled_trainingset:
+
+            if entry[1] not in self.Features:
+                self.Features[entry[1]] = []
+            self.Features[entry[1]].extend(entry[0])
+
+            if entry[1] not in self.ProbClasses:
+                self.ProbClasses[entry[1]] = 1
             else:
-                self.ProbClasses[s[1]] += 1
+                self.ProbClasses[entry[1]] += 1
+            vocab.extend(entry[0])
+
+        self.vocabSize = len(set(vocab))
         for c in self.ProbClasses:
             self.ProbClasses[c] /= len(labeled_trainingset)
 
     def calculateFeatureProbabilities(self, labeled_trainingset):
+        for c in self.Features:
+            features = {}
+            for feature in self.Features[c]:
+                if feature not in features:
+                    features[feature] = 1
+                else:
+                    features[feature] += 1
+            self.Features[c] = features
+
+        for c in self.Features:
+            features = {}
+            for feature in self.Features[c]:
+                features[feature] = (
+                    (self.Features[c][feature] + 1) / (sum(self.Features[c].values()) + self.vocabSize))
+            self.ProbFeatures[c] = features
+
+    def classify(self, featureSet, Verbose=True):
+        "featureSet: Array aus den Features"
+        probabilities = []
         for c in self.ProbClasses:
-            features = {}
-            for set in labeled_trainingset:
-                if set[1] == c:
-                    for data in set[0]:
-                        if data not in features:
-                            features[data] = 1
-                        else:
-                            features[data] += 1
-            self.ProbFeatures[c] = features
-        print(self.ProbFeatures)
-        for c in self.ProbFeatures:
-            features = {}
-            for feature in self.ProbFeatures[c]:
-                features[feature] = self.ProbFeatures[c][feature] / sum(self.ProbFeatures[c].values())
-                print(c)
-            self.ProbFeatures[c] = features
-        print(self.ProbFeatures)
+            prob = 1
+            for feature in featureSet:
+                if feature not in self.ProbFeatures[c]:
+                    prob += log((1 / (sum(self.Features[c].values()) + self.vocabSize)))
+                else:
+                    prob += log(self.ProbFeatures[c][feature])
+
+            prob += log(self.ProbClasses.get(c))
+            probabilities.append((prob, c))
+        prediction = max(probabilities, key=itemgetter(0))
+        if Verbose:
+            print("Vorhergesagte Gesamtbewertung: " + str(prediction[1]))
+            print("logarithmische Wahrscheinlichkeit: " + str(prediction[0]) + "\n")
+        return prediction
 
 
-classifier = NaiveBayesClassifier()
-classifier.train(bsp)
+    def classifyAll(self, testset):
+        predictions = []
+        for entry in testset:
+            predictions.append((self.classify(entry[0], False)[1], entry[1]))
+        correct_classifications = list(map(lambda x: x[0] == x[1], predictions)).count(True)
+        print("Korrekte Klassifikationen: " + str(correct_classifications) + " von " + str(len(predictions)))
+        print("Accuracy: " + str(correct_classifications/len(predictions)) + "\n")
+
+if __name__ == "__main__":
+    labeled_data = readData("file.txt")
+    trainingset, testset = labeled_data[:int((0.8 * len(labeled_data)))], labeled_data[int((0.8 * len(labeled_data))):]
+
+    classifier = NaiveBayesClassifier()
+    classifier.train(labeled_data)
+    classifier.classify(["4","5","4","5"])
+    classifier.classifyAll(testset)

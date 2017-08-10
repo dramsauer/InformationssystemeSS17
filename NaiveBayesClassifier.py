@@ -5,7 +5,7 @@ from collections import OrderedDict
 
 
 def readData(file):
-    file = open("file", "r")
+    file = open(file, "r")
     data = []
     csvReader = reader(file, delimiter=",")
     csvReader.__next__()
@@ -95,10 +95,10 @@ class NaiveBayesClassifier:
         print("Accuracy: " + str(correct_classifications/len(predictions)) + "\n")
 
 if __name__ == "__main__":
-    labeled_data = readData("file.txt")
+    labeled_data = readData("reviews.csv")
     trainingset, testset = labeled_data[:int((0.8 * len(labeled_data)))], labeled_data[int((0.8 * len(labeled_data))):]
 
     classifier = NaiveBayesClassifier()
-    classifier.train(labeled_data)
+    classifier.train(trainingset)
     classifier.classify(["4","5","4","5"])
     classifier.classifyAll(testset)

@@ -4,12 +4,13 @@ from operator import itemgetter
 from math import log
 import random
 
-def readData(file):
+
+def read_data(file):
     file = open(file, "r")
     data = []
-    csvReader = reader(file, delimiter=",")
-    csvReader.__next__()
-    for row in csvReader:
+    csv_reader = reader(file, delimiter=",")
+    csv_reader.__next__()
+    for row in csv_reader:
         data.append((row[0:4], row[4]))
     return data
 
@@ -25,13 +26,13 @@ class NaiveBayesClassifier:
     def train(self, labeled_trainingset):
         """labeled_trainingset: Liste aus Tupeln, Tupeln bestehen aus Liste der Features und der Klasse
         Bsp:[([Feature1, Feature2,..],Klasse1),([Feature1, Feature2,..],Klasse2)...]"""
-        self.calculateClassProbabilitiesAndSizeOfVocab(labeled_trainingset)
-        self.calculateFeatureProbabilities(labeled_trainingset)
+        self.calculate_class_probabilities_and_size_of_vocab(labeled_trainingset)
+        self.calculate_feature_probabilities(labeled_trainingset)
 
     # Methode zur Berechnung der Klassenwahrscheinlichkeiten
     # Zun‰chst werden die absoluten H‰ufigkeiten der Klassen im trainingsset bestimmt.
     # Anschlieﬂend wird die relative H‰ufigkeit der Klassen berechnet.
-    def calculateClassProbabilitiesAndSizeOfVocab(self, labeled_trainingset):
+    def calculate_class_probabilities_and_size_of_vocab(self, labeled_trainingset):
         vocab = []
         for entry in labeled_trainingset:
 
@@ -49,7 +50,7 @@ class NaiveBayesClassifier:
         for c in self.ProbClasses:
             self.ProbClasses[c] /= len(labeled_trainingset)
 
-    def calculateFeatureProbabilities(self, labeled_trainingset):
+    def calculate_feature_probabilities(self, labeled_trainingset):
         for c in self.Features:
             features = {}
             for feature in self.Features[c]:
@@ -66,12 +67,12 @@ class NaiveBayesClassifier:
                     (self.Features[c][feature] + 1) / (sum(self.Features[c].values()) + self.vocabSize))
             self.ProbFeatures[c] = features
 
-    def classify(self, featureSet, Verbose=True):
-        "featureSet: Array aus den Features"
+    def classify(self, feature_set, verbose=True):
+        """featureSet: Array aus den Features"""
         probabilities = []
         for c in self.ProbClasses:
             prob = 1
-            for feature in featureSet:
+            for feature in feature_set:
                 if feature not in self.ProbFeatures[c]:
                     prob += log((1 / (sum(self.Features[c].values()) + self.vocabSize)))
                 else:
@@ -80,26 +81,26 @@ class NaiveBayesClassifier:
             prob += log(self.ProbClasses.get(c))
             probabilities.append((prob, c))
         prediction = max(probabilities, key=itemgetter(0))
-        if Verbose:
+        if verbose:
             print("Vorhergesagte Gesamtbewertung: " + str(prediction[1]))
             print("logarithmische Wahrscheinlichkeit: " + str(prediction[0]) + "\n")
         return prediction
 
-
-    def classifyAll(self, testset):
+    def classify_all(self, test_set):
         predictions = []
-        for entry in testset:
+        for entry in test_set:
             predictions.append((self.classify(entry[0], False)[1], entry[1]))
         correct_classifications = list(map(lambda x: x[0] == x[1], predictions)).count(True)
         print("Korrekte Klassifikationen: " + str(correct_classifications) + " von " + str(len(predictions)))
-        print("Accuracy: " + str(correct_classifications/len(predictions)) + "\n")
+        print("Accuracy: " + str(correct_classifications / len(predictions)) + "\n")
+
 
 if __name__ == "__main__":
-    labeled_data = readData("reviews.csv")
+    labeled_data = read_data("reviews.csv")
     random.shuffle(labeled_data)
     trainingset, testset = labeled_data[:int((0.8 * len(labeled_data)))], labeled_data[int((0.8 * len(labeled_data))):]
 
     classifier = NaiveBayesClassifier()
     classifier.train(trainingset)
-    classifier.classify(["4","5","4","5"])
-    classifier.classifyAll(testset)
+    classifier.classify(["4", "5", "4", "5"])
+    classifier.classify_all(testset)

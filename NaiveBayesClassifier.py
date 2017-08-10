@@ -1,8 +1,7 @@
 from csv import reader
 from operator import itemgetter
 from math import log
-from collections import OrderedDict
-
+import random
 
 def readData(file):
     file = open(file, "r")
@@ -96,6 +95,7 @@ class NaiveBayesClassifier:
 
 if __name__ == "__main__":
     labeled_data = readData("reviews.csv")
+    random.shuffle(labeled_data)
     trainingset, testset = labeled_data[:int((0.8 * len(labeled_data)))], labeled_data[int((0.8 * len(labeled_data))):]
 
     classifier = NaiveBayesClassifier()

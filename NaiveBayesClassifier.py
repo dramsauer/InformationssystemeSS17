@@ -76,8 +76,8 @@ class NaiveBayesClassifier:
     def calculateFeatureProbabilities(self):
         """ Methode zur Berechnung der bedingten Wahrscheinlichkeiten P(Feature|Klasse)"""
 
-        # Die absoluten Häufigkeiten der einzelnen Teilbewertungen werden gezählt und in einem Dictionary gespeichert.
-        # Anschließend wird dieses Dictionary in self.Features gespeichert
+        # Die absoluten Häufigkeiten der einzelnen Teilbewertungen in jeder Klasse werden gezählt und in einem
+        # Dictionary gespeichert. Anschließend wird dieses Dictionary in self.Features gespeichert
         for c in self.Features:
             features = {}
             for feature in self.Features[c]:
@@ -142,25 +142,25 @@ class NaiveBayesClassifier:
         return correct_classifications / len(predictions)
 
 
-def crossFoldValidation(data, k):
-    """ Methode zur Kreuzvalidierung des Klassifizieres."""
-    random.shuffle(data)
-    partitions = []
-    # Die Daten werden in k gleich große Mengen aufgeteilt.
-    for i in range(0, len(data), k):
-        partitions.append(data[i:i + k])
-    accuracies = []
-    # Nun werden k-Testläufe gestartet, bei denen jeweils die i-te Teilmenge als Testset und die übrigen Teil-
-    # mengen als Trainingsset dienen. Für jeden Durchlauf wird die Accuracy gespeichert.
-    for i in range(0, k):
-        classifier = NaiveBayesClassifier()
-        trainingset = []
-        for partition in partitions[:i] + partitions[i+1:]:
-            trainingset.extend(partition)
-        classifier.train(trainingset)
-        accuracies.append(classifier.classifyAll(partitions[i]))
-    # Ausgabe der Durchschnittlichen Accuracy in den k-Testläufen
-    print("Durchschnittliche Accuracy: " + str(sum(accuracies) / len(accuracies)))
+    def crossFoldValidation(self, data, k):
+        """ Methode zur Kreuzvalidierung des Klassifizieres."""
+        random.shuffle(data)
+        partitions = []
+        # Die Daten werden in k gleich große Mengen aufgeteilt.
+        for i in range(0, len(data), k):
+            partitions.append(data[i:i + k])
+        accuracies = []
+        # Nun werden k-Testläufe gestartet, bei denen jeweils die i-te Teilmenge als Testset und die übrigen Teil-
+        # mengen als Trainingsset dienen. Für jeden Durchlauf wird die Accuracy gespeichert.
+        for i in range(0, k):
+            classifier = NaiveBayesClassifier()
+            trainingset = []
+            for partition in partitions[:i] + partitions[i+1:]:
+                trainingset.extend(partition)
+            classifier.train(trainingset)
+            accuracies.append(classifier.classifyAll(partitions[i]))
+        # Ausgabe der Durchschnittlichen Accuracy in den k-Testläufen
+        print("Durchschnittliche Accuracy bei Cross Fold Validation: " + str(sum(accuracies) / len(accuracies)))
 
 
 if __name__ == "__main__":
@@ -175,7 +175,7 @@ if __name__ == "__main__":
     classifier.classifyAll(testset,True)
 
     # Kreuzvalidierung
-    crossFoldValidation(labeled_data, 10)
+    classifier.crossFoldValidation(labeled_data, 10)
 
 
 

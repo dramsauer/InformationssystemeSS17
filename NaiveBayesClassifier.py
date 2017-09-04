@@ -3,7 +3,7 @@
 from csv import reader
 from operator import itemgetter
 from math import log
-
+import random
 
 def readData(file):
     """Funktion zum Einlesen einer CSV-Datei mit Komma als Delimiter.
@@ -124,7 +124,7 @@ class NaiveBayesClassifier:
             print("logarithmische Wahrscheinlichkeit: " + str(prediction[0]) + "\n")
         return prediction
 
-    def classifyAll(self, testset):
+    def classifyAll(self, testset, Verbose=False):
         """ Methode zur Klassifizierung eines Datensatzes aus mehreren Restaurants"""
         predictions = []
         # Jedes Restaurant des Datensatzes wird mithilfe der classify-Funktion klassifiziert und die Vorhersage
@@ -135,17 +135,45 @@ class NaiveBayesClassifier:
         correct_classifications = list(map(lambda x: x[0] == x[1], predictions)).count(True)
 
         # Ausgabe der Anzahl korrekter Klassifizierungen und der Accuracy
-        print("Korrekte Klassifikationen: " + str(correct_classifications) + " von " + str(len(predictions)))
-        print("Accuracy: " + str(correct_classifications / len(predictions)) + "\n")
+        if Verbose:
+            print("Korrekte Klassifikationen: " + str(correct_classifications) + " von " + str(len(predictions)))
+            print("Accuracy: " + str(correct_classifications / len(predictions)) + "\n")
         return correct_classifications / len(predictions)
+
+
+def crossFoldValidation(data, k):
+    """ Methode zur Kreuzvalidierung des Klassifizieres."""
+    random.shuffle(data)
+    partitions = []
+    # Die Daten werden in k gleich große Mengen aufgeteilt.
+    for i in range(0, len(data), k):
+        partitions.append(data[i:i + k])
+    accuracies = []
+    # Nun werden k-Testläufe gestartet, bei denen jeweils die i-te Teilmenge als Testset und die übrigen Teil-
+    # mengen als Trainingsset dienen. Für jeden Durchlauf wird die Accuracy gespeichert.
+    for i in range(0, k):
+        classifier = NaiveBayesClassifier()
+        trainingset = []
+        for partition in partitions[:i] + partitions[i+1:]:
+            trainingset.extend(partition)
+        classifier.train(trainingset)
+        accuracies.append(classifier.classifyAll(partitions[i]))
+    # Ausgabe der Durchschnittlichen Accuracy in den k-Testläufen
+    print("Durchschnittliche Accuracy: " + str(sum(accuracies) / len(accuracies)))
 
 
 if __name__ == "__main__":
     # Einlesen der Daten in der csv-Datei
     labeled_data = readData("reviews.csv")
+
     # Aufteilen der Daten in Trainingsset und Testset im Verhältnis 80:20
     trainingset, testset = labeled_data[:int((0.8 * len(labeled_data)))], labeled_data[int((0.8 * len(labeled_data))):]
 
     classifier = NaiveBayesClassifier()
     classifier.train(trainingset)
-    classifier.classifyAll(testset)
+    classifier.classifyAll(testset,True)
+
+    # Kreuzvalidierung
+    crossFoldValidation(labeled_data, 10)
+
+

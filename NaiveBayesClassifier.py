@@ -4,6 +4,7 @@ from csv import reader
 from operator import itemgetter
 from math import log
 import random
+import numpy as np
 
 def readData(file):
     """Funktion zum Einlesen einer CSV-Datei mit Komma als Delimiter.
@@ -93,7 +94,7 @@ class NaiveBayesClassifier:
             for feature in self.Features[c]:
                 # sum(self.Features[c].values() ist die Gesamtanzahl der Teilbewertung einer Klasse.
                 features[feature] = (
-                    (self.Features[c][feature] + 1) / (sum(self.Features[c].values()) + self.vocabSize))
+                    (self.Features[c][feature] + 1) / (sum(self.Features[c].values()) + self.vocabSize + 1))
             self.ProbFeatures[c] = features
 
     def classify(self, featureSet, Verbose=True):
@@ -108,7 +109,7 @@ class NaiveBayesClassifier:
             # Für jedes Feature wird die Wahrscheinlichkeit ermittelt und aufaddiert(aufgrund der log Umformung)
             for feature in featureSet:
                 if feature not in self.ProbFeatures[c]:
-                    prob += log((1 / (sum(self.Features[c].values()) + self.vocabSize)))
+                    prob += log((1 / (sum(self.Features[c].values()) + self.vocabSize + 1)))
                 else:
                     prob += log(self.ProbFeatures[c][feature])
 
@@ -175,5 +176,6 @@ if __name__ == "__main__":
 
     # Kreuzvalidierung
     crossFoldValidation(labeled_data, 10)
+
 
 

@@ -166,6 +166,7 @@ class NaiveBayesClassifier:
 if __name__ == "__main__":
     # Einlesen der Daten in der csv-Datei
     labeled_data = readData("reviews.csv")
+    random.shuffle(labeled_data)
 
     # Aufteilen der Daten in Trainingsset und Testset im Verhältnis 80:20
     trainingset, testset = labeled_data[:int((0.8 * len(labeled_data)))], labeled_data[int((0.8 * len(labeled_data))):]
@@ -176,6 +177,4 @@ if __name__ == "__main__":
 
     # Kreuzvalidierung
     classifier.crossFoldValidation(labeled_data, 10)
-
-
 

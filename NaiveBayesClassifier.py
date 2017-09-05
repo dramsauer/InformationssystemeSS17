@@ -3,8 +3,8 @@
 from csv import reader
 from operator import itemgetter
 from math import log
-import random
-import numpy as np
+
+
 
 def readData(file):
     """Funktion zum Einlesen einer CSV-Datei mit Komma als Delimiter.
@@ -141,40 +141,35 @@ class NaiveBayesClassifier:
             print("Accuracy: " + str(correct_classifications / len(predictions)) + "\n")
         return correct_classifications / len(predictions)
 
-
-    def crossFoldValidation(self, data, k):
-        """ Methode zur Kreuzvalidierung des Klassifizieres."""
-        random.shuffle(data)
-        partitions = []
-        # Die Daten werden in k gleich große Mengen aufgeteilt.
-        for i in range(0, len(data), k):
-            partitions.append(data[i:i + k])
-        accuracies = []
-        # Nun werden k-Testläufe gestartet, bei denen jeweils die i-te Teilmenge als Testset und die übrigen Teil-
-        # mengen als Trainingsset dienen. Für jeden Durchlauf wird die Accuracy gespeichert.
-        for i in range(0, k):
-            classifier = NaiveBayesClassifier()
-            trainingset = []
-            for partition in partitions[:i] + partitions[i+1:]:
-                trainingset.extend(partition)
-            classifier.train(trainingset)
-            accuracies.append(classifier.classifyAll(partitions[i]))
-        # Ausgabe der Durchschnittlichen Accuracy in den k-Testläufen
-        print("Durchschnittliche Accuracy bei Cross Fold Validation: " + str(sum(accuracies) / len(accuracies)))
+def crossFoldValidation(data, k):
+    """ Methode zur Kreuzvalidierung des Klassifizieres."""
+    partitions = []
+    # Die Daten werden in k gleich große Mengen aufgeteilt.
+    for i in range(0, len(data), k):
+        partitions.append(data[i:i + k])
+    accuracies = []
+    # Nun werden k-Testläufe gestartet, bei denen jeweils die i-te Teilmenge als Testset und die übrigen Teil-
+    # mengen als Trainingsset dienen. Für jeden Durchlauf wird die Accuracy gespeichert.
+    for i in range(0, k):
+        classifier = NaiveBayesClassifier()
+        trainingset = []
+        for partition in partitions[:i] + partitions[i + 1:]:
+            trainingset.extend(partition)
+        classifier.train(trainingset)
+        accuracies.append(classifier.classifyAll(partitions[i]))
+    # Ausgabe der Durchschnittlichen Accuracy in den k-Testläufen
+    print("Durchschnittliche Accuracy bei Cross Fold Validation: " + str(sum(accuracies) / len(accuracies)))
 
 
 if __name__ == "__main__":
     # Einlesen der Daten in der csv-Datei
     labeled_data = readData("reviews.csv")
-    random.shuffle(labeled_data)
 
     # Aufteilen der Daten in Trainingsset und Testset im Verhältnis 80:20
     trainingset, testset = labeled_data[:int((0.8 * len(labeled_data)))], labeled_data[int((0.8 * len(labeled_data))):]
 
     classifier = NaiveBayesClassifier()
     classifier.train(trainingset)
-    classifier.classifyAll(testset,True)
 
     # Kreuzvalidierung
-    classifier.crossFoldValidation(labeled_data, 10)
-
+    crossFoldValidation(labeled_data, 10)

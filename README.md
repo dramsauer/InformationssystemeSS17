@@ -1,6 +1,5 @@
-# InformationssystemeSS17
-
-Lernen eines Naive-Bayes-Klassifikators für Restaurant-Bewertungen in Tripadvisor
+# Lernen eines Naive-Bayes-Klassifikators für Restaurant-Bewertungen in Tripadvisor 
+im Rahmen des Kurses Informationssysteme SS17 an der Universität Regensburg
 
 Themenstellung:
 
